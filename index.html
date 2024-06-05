@@ -150,7 +150,18 @@
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ullamcorper tellus sed ante aliquam tempus. Etiam porttitor urna feugiat nibh elementum, et tempor dolor mattis. Donec accumsan enim augue, a vulputate nisi sodales sit amet. Proin bibendum ex eget mauris cursus euismod nec et nibh. Maecenas ac gravida ante, nec cursus dui. Vivamus purus nibh, placerat ac purus eget, sagittis vestibulum metus. Sed vestibulum bibendum lectus gravida commodo. Pellentesque auctor leo vitae sagittis suscipit.
+            While diffusion models excel at generating high-quality images, prior work reports
+            a significant performance gap between diffusion and autoregressive (AR) methods
+            on language modeling. In this work, we show that simple masked discrete diffusion
+            is more performant than previously thought. We apply an effective training recipe
+            that improves the performance of masked diffusion models and derive a simplified,
+            Rao-Blackwellized objective that results in additional improvements. Our objective
+            has a simple form—it is a mixture of classical masked language modeling losses—
+            and can be used to train encoder-only language models that admit efficient samplers,
+            including ones that can generate arbitrary lengths of text semi-autoregressively
+            like a traditional language model. On language modeling benchmarks, a range of
+            masked diffusion models trained with modern engineering practices achieves a new
+            state-of-the-art among diffusion models, and approaches AR perplexity.
           </p>
         </div>
       </div>
