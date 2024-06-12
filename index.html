@@ -356,11 +356,15 @@
           </tr>
         </tbody>
       </table>
+      <br>
+      <br>
       We also explore models' ability to generalize by taking models trained on OWT and evaluating how well they model unseen datasets.
       We compare the zero-shot perplexities of MDLM with SEDD and an AR Transformer language model on the validation splits of Penn Tree Bank (PTB), Wikitext, LM1B, Lambada, AG News, and Scientific Papers (Pubmed and Arxiv subsets).
       MDLM consistently outperforms SEDD.
       In some cases, e.g., for Lambada and Scientific Papers, MDLM attains better perplexity than AR.
       We hypothesize that these datasets are farther from OWT, and that diffusion models may be more robust to out-of-domain evaluation due to the unmasking-based objective.
+      <br>
+      <br>
       <table>
         <caption><em>Zero-shot validation perplexities ( &darr;) of models trained for 524B tokens on OpenWebText.
           All perplexities for diffusion models are upper bounds.</em></caption>
@@ -413,15 +417,44 @@
 </section>
 <!-- End Diffusion Models -->
 
-<section class="section" id="SimpleMaskedDiffusionModels">
+<section class="section" id="SampleGeneation">
   <div class="container is-max-desktop">
   <div class="content is-medium">
-    <h2 class="title">Sample Generation Process</h2>
-    <p>The sample generation process begins with a sequence of all masked tokens. MDLM then replaces these masked tokens with actual tokens in a random order.</p>
+    <h4>Sample Generation Process</h4>
+    <p>The sample generation process begins with a sequence of all masked tokens. MDLM then replaces these masked tokens with actual tokens in a random order.
       <img src="static/images/output2.gif" alt="A descriptive text for the GIF">
-    </div>
+    </p>
+
+    <h4>Training Considerations for Masked Diffusion</h4>
+    <p>One of the key contributions of our work is a well-engineered implementation of masked diffusion
+      models. Our experiments demonstrate that these improvements greatly boost performance even for
+      methods previously thought to perform poorly, e.g., D3PM . Below we briefly summarize these
+      implementation details.
+      
+      <ol>
+        <li>We find that tokenization is critical to performance. Small vocabularies,
+      such as the 8k vocabulary in D3PM, result in longer-range dependencies that decrease the
+      performance of both diffusion and AR models.
+        </li>
+        <li>By focusing on masked diffusion, we
+      are able to provide a numerically stable implementation of the objective function. Namely, since
+      previous formulations of discrete diffusion were constructed to accommodate a wide range of limiting
+      distributions, the objective was implemented by materializing the full transition matrices \(Q_t\) and
+      posterior probabilities. In contrast, we evaluate
+      \(\text{D}_{\text{KL}}[q(\mathbf{z}_s | \mathbf{z}_t,\mathbf{x}) \| p_\theta (\mathbf{z}_s | \mathbf{z}_t)]\) by examining only the
+      masked token indices rather than comparing the full true and approximate posterior distributions.
+        </li>
+        <li>Furthermore, we modernize the architecture for the denoising network relative to D3PM. In lieu
+      of the T5 architecture used in D3PM, we use the diffusion transformer (<a href="https://arxiv.org/abs/2212.09748">DiT</a>), which integrates time step conditioning into a standard encoder-only transformer and uses rotary positional embeddings.
+        </li>
+        <li>In addition, we implement a low-discrepancy sampler
+          that reduces the variance of the ELBO, similar to <a href="https://arxiv.org/abs/2107.00630">Kingma et al.</a> and draws correlated samples
+          ti rather than performing i.i.d. sampling.</li>
+      </ol>
+    </p>
   </div>
 </section>
+
 
 <!-- Paper poster -->
 <!-- <section class="hero is-small is-light">
