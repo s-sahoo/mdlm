@@ -130,14 +130,14 @@
   <div class="container is-max-desktop">
     <div class="hero-body">
       <img src="static/images/mdlm.png" alt="MY ALT TEXT"/>
-      <h3 class="subtitle has-text-centered">
+      <h4 class="subtitle has-text-centered">
         (<em>Left</em>) Our proposed masked diffusion language model (MDLM)
         is trained using a weighted average of masked cross entropy losses.
         (<em>Top Right</em>) In comparison to masked language models (MLM),
         MDLM's objective correspond to a principled variational lower bound,
         and supports generation via ancestral sampling.(<em>Bottom Right</em>)
         Perplexity (PPL) on One Billion Words benchmark.
-      </h3>
+      </h4>
     </div>
   </div>
 </section>
@@ -175,12 +175,12 @@
 <section class="section" id="DiffusionModels">
   <div class="container is-max-desktop">
     <h2 class="title">Diffusion Models</h2>
-    
+    Diffusion models excel at producing realistic, high-quality images and have received significant attention as potential tools for generating discrete data such as text, biological sequences, and graphs. Unlike autoregressive (AR) approaches, diffusion-based methods are not constrained to generate data sequentially, and therefore have the potential to improve long-term planning, controllable generation, and sampling speed. However, discrete diffusion methods exhibit a performance gap relative to AR models, especially in language modeling. The standard measure of language modeling performance is log-likelihood: when controlling for parameter count, prior work reports a sizable log-likelihood gap between AR and diffusion models.
     <!-- Continuous Diffusion -->
     <div class="content is-medium">
       <h3 class="subtitle">Continuous Diffusion</h3>
       <p>
-        TODO
+        Diffusion models are trained to iteratively undo a forward corruption process $q$ that takes clean data $\x$ drawn from the data distribution $q(\x)$ and defines latent variables $\z_t$ for $t \in [0, 1]$  that represent progressively noisy versions of $\x$.
       </p>
     </div>
     
@@ -188,7 +188,7 @@
     <div class="content is-medium">
       <h3 class="subtitle">Discrete Diffusion</h3>
       <p>
-        TODO
+        Applications of diffusion modeling to discrete data can be broken into two broad categories. First are works that embed discrete structures in continuous space and then perform the Gaussian diffusion defined above on these continuous representations [6 , 11, 17 , 18 , 22, 26 , 42]. More related to our method are works that define a diffusion process directly on discrete structures. D3PM [1] introduces a framework with a Markov forward process q(z_t|z_{t−1}) = Cat(zt;Qtzt−1) defined by the multiplication of matrices Qt over T discrete time steps. 
       </p>
     </div>
   </div>
@@ -199,11 +199,155 @@
 <section class="section" id="SimpleMaskedDiffusionModels">
   <div class="container is-max-desktop">
     <h2 class="title">Simple Masked Diffusion Models</h2>
-    Interpolating Diffusion
-    Masked Diffusion
-    Forward Process
-    Reverse Process
+    While previous work on discrete diffusion supports general forward processes (e.g., general Qt in
+D3PM), absorbing state (i.e., masking) diffusion consistently achieves the best performance [1, 25 ].
+In this work, instead of supporting general noise processes, we focus on masking and derive tight
+Rao-Blackwellized objectives that outperform general approaches and do not require CTMC theory.
+In this section, we first define the diffusion process for a categorical random variable. Later in Sec. 3.5,
+we extend this process to sequences containing multiple such categorical variables. We denote our
+overall approach as Masked Diffusion Language Models (MDLM).
   </div>
+  <div class="content is-medium">
+    <h3 class="subtitle">Interpolating Masked Diffusion</h3>
+    <p>
+      We restrict our attention to forward processes q that interpolate between clean data x ∈ V and a target
+      distribution Cat(.;π), forming a direct extension of Gaussian diffusion in (1). The q define a sequence
+      of increasingly noisy latent variables zt ∈ V, where the time step t runs from t = 0 (least noisy) to t = 1
+      (most noisy). The marginal of zt conditioned on x at time t is
+      q(zt|x) = Cat(zt;αtx+(1−αt)π), (4)
+      where αt ∈ [0,1] is a strictly decreasing function in t, with α0 ≈ 1 and α1 ≈ 0
+    
+      <h4>Reverse process</h4>
+
+      The specific parameterization for $\p(\z_s | \z_t)$ that we use is
+      \begin{align}\label{eqn:approx_posterior}
+          \p(\z_s | \z_t) =
+          q(\z_s | \z_t, \x=\xapprox) =
+          \begin{cases}
+              \cat (\z_s; \z_t), & \z_t \neq \m, \\
+              \cat \left( \z_s; \frac{
+              (1 - \as)\m + (\as - \at)\xapprox}{1 - \at}\right). & \z_t=\m,
+          \end{cases}
+      \end{align}
+      Furthermore, we induce 2 key properties of the absorbing state diffusion process into our denoising
+      model, xθ (zt,t): an input token remains unchanged during reverse diffusion, and the clean input
+      is never masked We implement these as substitutions to the output of xθ (zt,t), hence we call our
+      parameterization SUBS.
+      Zero Masking Probabilities First, notice that by definition, ⟨x,m⟩ = 0. For this reason, we design
+      the denoising network such that ⟨xθ (zt,t),m⟩ = 0, i.e., we substitute the logit index corresponding
+      to the [MASK] token with −∞.
+      Carry-Over Unmasking Second, if zt is unmasked, then we desire xθ (zt,t) = zt, i.e., unmasked
+      latents are ‘carried over’. We accomplish this by substituting the output of our network to simply copy
+      unmasked inputs.
+
+      <h4>Loss</h4>
+      \begin{align}\label{eqn:dif_loss_cont_subs_multidim}
+          \lossnelbo = \mathbb{E}_{q}\int_{t=0}^{t=1} \frac{\dat}{1 - \at} \sum_{\ell} \log \langle \denoise^\ell(\z_t), \x^\ell \rangle \d t
+      \end{align}
+    </p>
+
+    <table>
+      <tr>
+        <th></th>
+        <th>PTB</th>
+        <th>Wikitext</th>
+        <th>LM1B</th>
+        <th>Lambada</th>
+        <th>AG News</th>
+        <th>Pubmed</th>
+        <th>Arxiv</th>
+      </tr>
+      <tr>
+        <td><strong>AR (Retrained)</strong></td>
+        <td><strong>82.05</strong></td>
+        <td><strong>25.75</strong></td>
+        <td><strong>51.25</strong></td>
+        <td>51.28</td>
+        <td><strong>52.09</strong></td>
+        <td>49.01</td>
+        <td>41.73</td>
+      </tr>
+      <tr>
+        <td><strong>SEDD (Retrained)</strong></td>
+        <td>100.09</td>
+        <td>34.28</td>
+        <td>68.20</td>
+        <td>49.86</td>
+        <td>62.09</td>
+        <td>44.53</td>
+        <td>38.48</td>
+      </tr>
+      <tr>
+        <td><strong>\algo{} (Ours)</strong></td>
+        <td>95.26</td>
+        <td>32.83</td>
+        <td>67.01</td>
+        <td><strong>47.52</strong></td>
+        <td>61.15</td>
+        <td><strong>41.89</strong></td>
+        <td><strong>37.37</strong></td>
+      </tr>
+    </table>
+
+    <table>
+      <caption>Test perplexities (PPL; &darr;) on LM1B and OpenWebText. Best diffusion value is bolded.</caption>
+      <thead>
+        <tr>
+          <th></th>
+          <th>LM1B (&darr;)</th>
+          <th>OWT (&darr;)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>SEDD</td>
+          <td>&le; 32.79</td>
+          <td>&le; 24.10</td>
+        </tr>
+        <tr>
+          <td>Transformer</td>
+          <td>20.86</td>
+          <td>17.54</td>
+        </tr>
+        <tr>
+          <td>MDLM</td>
+          <td>&le; <b>23.00</b></td>
+          <td><b>23.21</b></td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+  <div class="content is-medium">
+    <h3 class="subtitle">Samplers</h3>
+    <p>
+
+    </p>
+  </div>
+
+  <div class="content is-medium">
+    <h3 class="subtitle">Training Considerations for Masked Diffusion</h3>
+    <p>
+      One of the key contributions of our work is a well-engineered implementation of masked diffusion
+      models. Our experiments demonstrate that these improvements greatly boost performance even for
+      methods previously thought to perform poorly, e.g., Austin et al. [1] . Below we briefly summarize these
+      implementation details. First, we find that tokenization is critical to performance. Small vocabularies,
+      such as the 8k vocabulary in Austin et al. [1], result in longer-range dependencies that decrease the
+      performance of both diffusion and AR models. Additionally, by focusing on masked diffusion, we
+      are able to provide a numerically stable implementation of the objective function. Namely, since
+      previous formulations of discrete diffusion were constructed to accommodate a wide range of limiting
+      distributions [1], the objective was implemented by materializing the full transition matrices  ̄Qt and
+      posterior probabilities. In contrast, we evaluate DKL[q(zs | zt,x)||pθ (zs | zt)] by examining only the
+      masked token indices rather than comparing the full true and approximate posterior distributions.
+      Furthermore, we modernize the architecture for the denoising network relative to D3PM [ 1 ]. In lieu
+      of the T5 architecture used in D3PM, we use the diffusion transformer (DiT) introduced in Peebles
+      & Xie [32] , which integrates time step conditioning into a standard encoder-only transformer [47 ]
+      and uses rotary positional embeddings [ 43 ]. In addition, we implement a low-discrepancy sampler
+      that reduces the variance of the ELBO, similar to Kingma et al. [21] and draws correlated samples rather than performing i.i.d. sampling.
+    </p>
+  </div>
+
 </section>
 <!-- End Diffusion Models -->
 
