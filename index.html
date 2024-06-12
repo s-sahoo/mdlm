@@ -141,6 +141,10 @@
         and supports generation via ancestral sampling.(<em>Bottom Right</em>)
         Perplexity (PPL) on One Billion Words benchmark.
       </h4>
+      <img src="static/images/output2.gif" width="70%" alt="A descriptive text for the GIF">
+      <h4 class="subtitle has-text-centered">
+        The sample generation process begins with a sequence of all masked tokens. MDLM then replaces these masked tokens with actual tokens in a random order.
+      </h4>
     </div>
   </div>
 </section>
@@ -204,11 +208,15 @@
   <div class="content is-medium">
     <h2 class="title">Simple Masked Diffusion Models</h2>
     <p>While previous work on discrete diffusion supports general forward processes (e.g., general \(Q_t\) in
-    D3PM), absorbing state (i.e., masking) diffusion consistently achieves the best performance [1, 25 ].
+    D3PM), absorbing state (i.e., masking) diffusion consistently achieves the best performance.
     In this work, instead of supporting general noise processes, we focus on masking and derive tight
     Rao-Blackwellized objectives that outperform general approaches and do not require CTMC theory (for ex. <a href="https://arxiv.org/abs/2310.16834">SEDD</a>).
     We denote our
     overall approach as Masked Diffusion Language Models (MDLM).
+    <!-- <h4>Sample Generation Process</h4>
+    <p>The sample generation process begins with a sequence of all masked tokens. MDLM then replaces these masked tokens with actual tokens in a random order.
+      <img src="static/images/output2.gif" alt="A descriptive text for the GIF">
+    </p> -->
     </p>
     <h4 class="subtitle">Interpolating Masked Diffusion</h4>
     <p>We forcus on forward processes q that interpolate between clean data \(\mathbf{x} \in \mathcal{V}\),
@@ -436,11 +444,6 @@
           that reduces the variance of the ELBO, similar to <a href="https://arxiv.org/abs/2107.00630">Kingma et al.</a> and draws correlated samples
           ti rather than performing i.i.d. sampling.</li>
       </ol>
-    </p>
-
-    <h4>Sample Generation Process</h4>
-    <p>The sample generation process begins with a sequence of all masked tokens. MDLM then replaces these masked tokens with actual tokens in a random order.
-      <img src="static/images/output2.gif" alt="A descriptive text for the GIF">
     </p>
 
     </div>
