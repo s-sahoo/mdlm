@@ -218,15 +218,14 @@
       (most noisy).
       
       The marginal of \(\mathbf{z}_t\) conditioned on \(\mathbf{x}\) at time \(t\) is given by 
-      \(q(\mathbf{z}_t|x) = Cat(\mathbf{z}_t;\alpha_t \mathbf{x}+(1 - \alpha_t) \boldsymbol{\mathit{\pi}})\),
+      \(q(\mathbf{z}_t|x) = \text{Cat}(\mathbf{z}_t;\alpha_t \mathbf{x}+(1 - \alpha_t) \boldsymbol{\mathit{\pi}})\),
       where \(\alpha_t \in [0, 1]\) is a strictly decreasing function in t, with \(\alpha_{t=0} \approx 0\) and \(\alpha_{t=1} \approx 1\).
       
-      In absorbing state diffusion, we set \(\boldsymbol{\mathit{\pi}} = \mathbf{m}\) where \(\mathbf{m} \in \mathcal{V}\) and \(\mathbf{m}_K=1\), with \(K^\text{th}\)category representing the special masked token, [MASK]. At each noising step, \(t\), the input \(\mathbf{x}\) transitions to a `masked' state
-      \(\mathbf{m}\) with a certain probability. 
+      In absorbing state diffusion, we set \(\boldsymbol{\mathit{\pi}} = \mathbf{m}\) where \(\mathbf{m} \in \mathcal{V}\) and \(\mathbf{m}_K=1\), with \(K^\text{th}\)category representing the special masked token, [MASK].
     </p>
     
     <h4>Reverse process</h4>
-    <p>The specific parameterization for \(p_\theta(\mathbf{z}_s | \mathbf{z}_t)\) that we use is
+    <p>The specific parameterization for \(p_\theta(\mathbf{z}_s | \mathbf{z}_t)\) with \(0 \leq s < t \leq 1\) that we use is:
       \begin{align}\label{eqn:approx_posterior}
           p_\theta(\mathbf{z}_s | \mathbf{z}_t) =
           q(\mathbf{z}_s | \mathbf{z}_t, \mathbf{x} = \mathbf {x}_\theta (\mathbf{z}_t, t)) =
@@ -238,13 +237,13 @@
       \end{align}
       Furthermore, we induce 2 key properties of the absorbing state diffusion process into our denoising
       model, \( \mathbf{x}_\theta (\mathbf{z}_t, t) \): an input token remains unchanged during reverse diffusion, and the clean input
-      is never masked We implement these as substitutions to the output of \( \mathbf{x}_\theta (\mathbf{z}_t, t) \), hence we call our
+      is never masked. We implement these as substitutions to the output of \( \mathbf{x}_\theta (\mathbf{z}_t, t) \), hence we call our
       parameterization <b>SUBS</b>.
       <ol>
         <li>
           <b>Zero Masking Probabilities:</b> First, notice that by definition, \( \langle \mathbf{x}, \mathbf{m} \rangle = 0 \).
           For this reason, we design the denoising network such that 
-          \( \langle \mathbf{x}_\theta (\mathbf{z}_t,t),\mathbf{m} \rangle = 0 \), i.e., we substitute the logit index corresponding to the [MASK] token with \(\infty\).
+          \( \langle \mathbf{x}_\theta (\mathbf{z}_t,t),\mathbf{m} \rangle = 0 \), i.e., we substitute the logit index corresponding to the [MASK] token with \(-\infty\).
         </li>
         <li>
           <b>Carry-Over Unmasking:</b> Second, if \( \mathbf{z}_t \) is unmasked, then we desire \( \mathbf{x}_\theta (\mathbf{z}_t, t) = \mathbf{z}_t \), i.e., unmasked latents are "carried over". We accomplish this by substituting the output of our network to simply copy unmasked inputs.
@@ -258,8 +257,7 @@
       \begin{align}
           \mathcal{L}_{\text{NELBO}}^\infty = \mathbb{E}_{q}\int_{t=0}^{t=1} \frac{\alpha_{t}'}{1 - \alpha_t} \sum_{\ell = 1}^{L} \log \langle \mathbf {x}_\theta^\ell(\mathbf{z}_t), \mathbf{x}^\ell \rangle \text{d} t
       \end{align}
-      where \(\alpha_{t}'\) denotes the time derivative of \(\alpha_{t}\). As shown in the table below, MDLM outperforms the previous diffusion models and almost matches
-      the performance of the AR models.
+      where \(\alpha_{t}'\) denotes the time derivative of \(\alpha_{t}\). As shown in the table below, MDLM outperforms the previous diffusion models and nearly matches the performance of AR models in text generation on the LM1B dataset.
 
       <!-- <table>
         <caption>Test perplexities (PPL; &darr;) on LM1B. Best diffusion value is bolded. All perplexities for diffusion models are upper bounds.</caption>
@@ -407,8 +405,6 @@
           <td><strong>37.37</strong></td>
         </tr>
       </table>
-      <img src="static/images/output.gif" alt="A descriptive text for the GIF">
-      <img src="static/images/output.gif" width="150%" alt="A descriptive text for the GIF">
     </p>
     </div>
   </div>
@@ -417,6 +413,15 @@
 </section>
 <!-- End Diffusion Models -->
 
+<section class="section" id="SimpleMaskedDiffusionModels">
+  <div class="container is-max-desktop">
+  <div class="content is-medium">
+    <h2 class="title">Sample Generation Process</h2>
+    <p>The sample generation process begins with a sequence of all masked tokens. MDLM then replaces these masked tokens with actual tokens in a random order.</p>
+      <img src="static/images/output2.gif" alt="A descriptive text for the GIF">
+    </div>
+  </div>
+</section>
 
 <!-- Paper poster -->
 <!-- <section class="hero is-small is-light">
