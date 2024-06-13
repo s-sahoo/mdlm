@@ -245,9 +245,7 @@
           \end{cases}
       \end{align}
       Furthermore, we induce 2 key properties of the absorbing state diffusion process into our denoising
-      model, \( \mathbf{x}_\theta (\mathbf{z}_t, t) \): an input token remains unchanged during reverse diffusion, and the clean input
-      is never masked. We implement these as substitutions to the output of \( \mathbf{x}_\theta (\mathbf{z}_t, t) \), hence we call our
-      parameterization <b>SUBS</b>.
+      model, \( \mathbf{x}_\theta (\mathbf{z}_t, t) \):
       <ol>
         <li>
           <b>Zero Masking Probabilities:</b> First, notice that by definition, \( \langle \mathbf{x}, \mathbf{m} \rangle = 0 \).
@@ -258,6 +256,7 @@
           <b>Carry-Over Unmasking:</b> Second, if \( \mathbf{z}_t \) is unmasked, then we desire \( \mathbf{x}_\theta (\mathbf{z}_t, t) = \mathbf{z}_t \), i.e., unmasked latents are "carried over". We accomplish this by substituting the output of our network to simply copy unmasked inputs.
         </li>
       </ol>
+      As discussed in the paper, each of these properties plays a crucial role simplifying the Diffusion objective.
     </p>
     <h4>Loss</h4>
     <p>
