@@ -256,7 +256,7 @@
           <b>Carry-Over Unmasking:</b> Second, if \( \mathbf{z}_t \) is unmasked, then we desire \( \mathbf{x}_\theta (\mathbf{z}_t, t) = \mathbf{z}_t \), i.e., unmasked latents are "carried over". We accomplish this by substituting the output of our network to simply copy unmasked inputs.
         </li>
       </ol>
-      As discussed in the paper, each of these properties plays a crucial role simplifying the Diffusion objective.
+      As discussed in the paper, each of these properties plays a crucial role simplifying the Diffusion objetive. We implement these as substitutions to the output of \(\mathbf{x}_\theta (\mathbf{z}_t, t)\), hence we call our parameterization SUBS.
     </p>
     <h4>Loss</h4>
     <p>
