@@ -245,7 +245,7 @@
           \end{cases}
       \end{align}
       Furthermore, we induce 2 key properties of the absorbing state diffusion process into our denoising
-      model, \( \mathbf{x}_\theta (\mathbf{z}_t, t) \):
+      model, \( \mathbf{x}_\theta (\mathbf{z}_t, t): \mathcal{V} \times [0, 1] \rightarrow \Delta^{K}\),  where \(\Delta^{K}\) denotes the \(K\)-simplex:
       <ol>
         <li>
           <b>Zero Masking Probabilities:</b> First, notice that by definition, \( \langle \mathbf{x}, \mathbf{m} \rangle = 0 \).
@@ -442,7 +442,7 @@
         </li>
         <li>In addition, we implement a low-discrepancy sampler
           that reduces the variance of the ELBO, similar to <a href="https://arxiv.org/abs/2107.00630">Kingma et al.</a> and draws correlated samples
-          ti rather than performing i.i.d. sampling.</li>
+          \(t \in [0, 1]\) rather than performing i.i.d. sampling along the batch dimension.</li>
       </ol>
     </p>
 
